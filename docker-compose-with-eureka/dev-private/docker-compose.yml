@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  configserver:
+    image: pisethbank_private/configserver:latest
+    mem_limit: 700m
+    ports:
+      - "8072:8072"
+    networks:
+      - pisethbankprivatenet
+  account:
+    image: pisethbank_private/account:latest
+    mem_limit: 700m
+    ports:
+      - "8081:8081"
+    networks:
+      - pisethbankprivatenet
+    depends_on:
+      - configserver
+    deploy: 
+      restart_policy:
+        condition: on-failure
+        delay: 20s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8072/
+networks:
+  pisethbankprivatenet:

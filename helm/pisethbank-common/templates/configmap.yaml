@@ -1,0 +1,21 @@
+{{- define "common.configmap" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.configMapName }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.global.activeProfile }}
+  SPRING_CONFIG_IMPORT: {{ .Values.global.configServerURL }}
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: {{ .Values.global.eurekaServerURL }}
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: {{ .Values.global.keyCloakURL }}
+  JAVA_TOOL_OPTIONS: {{ .Values.global.openTelemetryJavaAgent }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.global.otelExporterEndPoint }}
+  OTEL_METRICS_EXPORTER: {{ .Values.global.otelMetricsExporter }}
+  SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: {{ .Values.global.kafkaBrokerURL }}
+  SPRING_DATA_MONGODB_HOST: {{ .Values.global.mongodb.host | quote }}
+  SPRING_DATA_MONGODB_PORT: {{ .Values.global.mongodb.port | quote }}
+  SPRING_DATA_MONGODB_DATABASE: {{ .Values.global.mongodb.database | quote }}
+  SPRING_DATA_MONGODB_USERNAME: {{ .Values.global.mongodb.username | quote }}
+  SPRING_DATA_MONGODB_PASSWORD: {{ .Values.global.mongodb.password | quote }}
+  SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: {{ .Values.global.mongodb.authDatabase | quote }}
+{{- end -}}

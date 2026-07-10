@@ -1,0 +1,51 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 AndaleMono;\f1\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red103\green107\blue114;\red23\green23\blue26;\red195\green123\blue90;
+\red109\green109\blue109;\red89\green158\blue96;\red203\green170\blue101;\red174\green176\blue183;}
+{\*\expandedcolortbl;;\csgenericrgb\c40392\c41961\c44706;\csgenericrgb\c9020\c9020\c10196;\csgenericrgb\c76471\c48235\c35294;
+\csgenericrgb\c42745\c42745\c42745;\csgenericrgb\c34902\c61961\c37647;\csgenericrgb\c79608\c66667\c39608;\csgenericrgb\c68235\c69020\c71765;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww33660\viewh20400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs48 \cf0 Homework Microsoft\
+\
+=> deploy service : docker compose => production enviroment\
+	- config server: 8000\
+	- eureka server: 9000\
+	- account service: 7000\
+	- loan service : 6000, 6001\
+	- card service : 5000\
+\
+1. All service working\
+2. Account service has relationship with loan service and card service through Feign Client\
+3. After service working so recode video demo => call through Postman (max 5 animate)\
+4. Share docker compose file\
+\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs32 \cf2 \cb3 # ======== Config Server =======\
+\cf4 spring.profiles.active\cf5 =\cf6 prod\
+\cf2 #spring.config.import=configserver:http://localhost:8071\
+\cf4 spring.config.import\cf5 =\cf6 configserver:http://configserver:8071\
+ \
+\
+\cf7 <dependency>\
+    <groupId>\cf8 org.springframework.cloud\cf7 </groupId>\
+    <artifactId>\cf8 spring-cloud-starter-config\cf7 </artifactId>\
+</dependency>\
+\
+\
+<dependencyManagement>\
+    <dependencies>\
+        <dependency>\
+            <groupId>\cf8 org.springframework.cloud\cf7 </groupId>\
+            <artifactId>\cf8 spring-cloud-dependencies\cf7 </artifactId>\
+            <version>\cf8 $\{spring-cloud.version\}\cf7 </version>\
+            <type>\cf8 pom\cf7 </type>\
+            <scope>\cf8 import\cf7 </scope>\
+        </dependency>\
+    </dependencies>\
+</dependencyManagement>\
+}

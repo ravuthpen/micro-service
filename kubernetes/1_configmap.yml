@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pisethbank-configmap
+data:
+  SPRING_PROFILES_ACTIVE: defult
+  SPRING_CONFIG_IMPORT: "configserver:http://configserver:8071/"
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:9000/eureka/"
+  CONFIGSERVER_APPLICATION_NAME: configserver
+  EUREKA_APPLICATION_NAME: eurekaserver
+  ACCOUNT_APPLICATION_NAME: account
+  LOAN_APPLICATION_NAME: laon
+  CARD_APPLICATION_NAME: card
+  GATEWAY_APPLICATION_NAME: gatewayserver
+  KC_BOOTSTRAP_ADMIN_USERNAME: admin
+  KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+  MONGODB_HOST_NAME: mongodb
+  SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: "kafka-broker-1:29093,kafka-broker-2:29093,kafka-broker-3:29093"
+  SPRING_KAFKA_PROPERTIES_CLIENT_LISTENER_NAME: CLIENT
+  SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWT-SETR-URI: "http://localhost:9080/realms/master/protocol/openid-connect/certs"
+        

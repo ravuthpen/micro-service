@@ -1,0 +1,155 @@
+services:
+  rabbit:
+    image: rabbitmq:4-management
+    container_name: rabbit
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    extends:
+      file: common.yml
+      service: ms-deploy-network
+
+  configserver:
+    image: pisethbank/configserver:v2
+    container_name: configserver-ms
+    ports:
+      - "8000:8071"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8071/actuator/health/readiness | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    extends:
+      file: common.yml
+      service: ms-base
+
+  eurekaserver:
+    image: pisethbank/eurekaserver:v2
+    container_name: eurekaserver-ms
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:9000/actuator/health/readiness | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    environment:
+      SPRING_RABBITMQ_HOST: rabbit
+    extends:
+      file: common.yml
+      service: ms-base-configserver
+  
+  mongodb-eureka:
+    image: mongo:latest
+    container_name: mongodb-ms
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "7777:27017"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "mongodb://root:root@localhost:27017/admin",
+          "--quiet",
+          "--eval",
+          "db.adminCommand('ping').ok"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - ./data:/data/db
+    extends:
+      file: common.yml
+      service: ms-deploy-network
+
+  account:
+    image: pisethbank/account:v2
+    container_name: account-ms
+    ports:
+      - "7000:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8080/actuator/health/readiness | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    extends:
+      file: common.yml
+      service: ms-base-confgiserver-eureka-health
+
+  card:
+    image: pisethbank/card:v2
+    container_name: card-ms
+    ports:
+      - "5000:8070"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8070/actuator/health/readiness | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      mongodb-eureka:
+        condition: service_started   # Mongo has no healthcheck
+    environment:
+      MONGODB_HOST_NAME: mongodb-eureka
+    extends:
+      file: common.yml
+      service: ms-base-confgiserver-eureka-health
+
+  loan:
+    image: pisethbank/loan:v2
+    container_name: loan-ms
+    ports:
+      - "6000:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8090/actuator/health/readiness | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      mongodb-eureka:
+        condition: service_started
+    environment:
+      MONGODB_HOST_NAME: mongodb-eureka
+    extends:
+      file: common.yml
+      service: ms-base-confgiserver-eureka-health
+  gatewayserver:
+    image: pisethbank/gatewayserver:v2
+    container_name: gatewayserver-ms
+    ports:
+      - "8072:8072"
+    depends_on:
+      mongodb-eureka:
+        condition: service_healthy
+      loan:
+        condition: service_healthy
+      card:
+        condition: service_healthy
+      account:
+        condition: service_healthy
+    extends:
+      file: common.yml
+      service: ms-base-confgiserver-eureka-health
+
+networks:
+  pisethbanknet:

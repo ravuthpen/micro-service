@@ -1,0 +1,122 @@
+services:
+  configserver:
+    image: pisethbank/configserver:latest
+    mem_limit: 700m
+    ports:
+      - "8000:8071"
+    networks:
+      - pisethbanknet
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8071/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  eurekaserver:
+    image: pisethbank/eurekaserver:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - pisethbanknet
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+
+  mongodb-eureka:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "7777:27017"
+    volumes:
+      - './data:/data/pisethbankdata'
+    networks:
+      - pisethbanknet
+
+  account:
+    image: pisethbank/account:latest
+    mem_limit: 700m
+    ports:
+      - "7000:8080"
+    networks:
+      - pisethbanknet
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_started
+      mongodb-eureka:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
+
+  loan:
+    image: pisethbank/loan:latest
+    mem_limit: 700m
+    ports:
+      - "6000:8090"
+    networks:
+      - pisethbanknet
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_started
+      mongodb-eureka:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
+      MONGODB_HOST_NAME: mongodb-eureka
+  loan2:
+    image: pisethbank/loan:latest
+    mem_limit: 700m
+    ports:
+      - "6001:8090"
+    networks:
+      - pisethbanknet
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_started
+      mongodb-eureka:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
+      MONGODB_HOST_NAME: mongodb-eureka
+
+  card:
+    image: pisethbank/card:latest
+    mem_limit: 700m
+    ports:
+      - "5000:8070"
+    networks:
+      - pisethbanknet
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_started
+      mongodb-eureka:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
+      MONGODB_HOST_NAME: mongodb-eureka
+
+networks:
+  pisethbanknet:
